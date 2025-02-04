@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "./context/AuthContext";  // React Context for token
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { Layout, Spin, message } from "antd";
+import { RootState } from "./store/rootReducer";  // Import the RootState to access the Redux state
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
-function App() {
-  const [count, setCount] = useState(0)
+const { Content } = Layout;
+
+const App: React.FC = () => {
+  const dispatch = useDispatch();
+  const { token } = useAuth(); // Access token from React Context
+  const { loading, error } = useSelector((state: RootState) => state.auth);  // Get loading and error from Redux store
+
+  useEffect(() => {
+    if (error) {
+      message.error(error); // Show error message if login fails
+    }
+  }, [error]);
+
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    return token ? <>{children}</> : <Navigate to="/login" />;  // Redirect if not authenticated
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <Layout>
+        <Content style={{ padding: "20px" }}>
+          {loading ? (
+            <Spin size="large" />  // Show loading spinner while loading
+          ) : (
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} /> {/* Redirect */}
+            </Routes>
+          )}
+        </Content>
+      </Layout>
+    </Router>
+  );
+};
 
-export default App
+export default App;
