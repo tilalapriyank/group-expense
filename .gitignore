@@ -12,6 +12,7 @@ yarn-error.log
 /build
 /.vite
 /.next
+dist/
 
 # IDE/editor settings
 .vscode/
