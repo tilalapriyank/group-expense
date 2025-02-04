@@ -2,17 +2,6 @@
 
 Group Expense Manager is a web application that allows users to manage shared expenses within a group. Built using the **MERN stack (MongoDB, Express, React, Node.js)** with **TypeScript** for type safety, **Redux** for state management, and **Redux-Saga** for handling side effects. This app enables users to create groups, add expenses, track balances, and generate QR codes for settlements.
 
-## Table of Contents
-
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [License](#license)
-
 ---
 
 ## Features
