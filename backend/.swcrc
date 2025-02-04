@@ -10,6 +10,9 @@
           "runtime": "automatic"
         }
       }
+    },
+    "module": {
+      "type": "commonjs"  
     }
   }
   
