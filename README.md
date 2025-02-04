@@ -22,7 +22,6 @@ Group Expense Manager is a web application that allows users to manage shared ex
   - **MongoDB** with **Mongoose** (for database management)
   - **TypeScript** for static typing and better code quality
   - **JWT** for secure authentication
-  - **Redux-Saga** for handling side effects and API calls
   - **SWC** for faster TypeScript compilation
 - **Frontend**:
   - **React.js** for building the user interface
