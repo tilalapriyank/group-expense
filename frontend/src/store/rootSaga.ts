@@ -1,6 +1,8 @@
 import { all } from "redux-saga/effects";
 import { authSaga } from "./sagas/authSaga";
+import { watchUserSaga } from './sagas/userSaga';
+import { watchGroupActions } from "./sagas/groupSagas";
 
 export default function* rootSaga() {
-  yield all([authSaga()]);
+  yield all([authSaga(), watchUserSaga(),watchGroupActions()]);
 }

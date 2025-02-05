@@ -3,12 +3,12 @@ import { LOGIN_REQUEST, REGISTER_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE, REGISTER
 import axios from "axios";
 
 const loginApi = async (email: string, password: string) => {
-    const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+    const response = await axios.post("http://192.168.1.19:5000/api/auth/login", { email, password });
     return response.data;
 };
 
 const registerApi = async (name: string, email: string, password: string) => {
-    const response = await axios.post("http://localhost:5000/api/auth/register", { name, email, password });
+    const response = await axios.post("http://192.168.1.19:5000/api/auth/register", { name, email, password });
     return response.data;
 };
 

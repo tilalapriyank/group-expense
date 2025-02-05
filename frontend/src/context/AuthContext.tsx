@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
     token: string | null;
-    user: { name: string; email: string } | null;
+    user: { id: string  } | null;
     login: (email: string, password: string) => void;
     logout: () => void;
 }
@@ -18,7 +18,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+    const [user, setUser] = useState<{ id: string; } | null>(null);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -29,8 +29,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const decodeToken = (token: string) => {
         try {
-            const decoded = jwtDecode(token); 
-            setUser({ name: decoded.name, email: decoded.email });
+            const decoded = jwtDecode(token);
+            setUser({ id: decoded.userId });
         } catch (error) {
             console.error("Error decoding token: ", error);
         }

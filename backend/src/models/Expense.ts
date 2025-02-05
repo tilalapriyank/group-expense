@@ -6,7 +6,6 @@ const ExpenseSchema = new mongoose.Schema(
     paidBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     amount: { type: Number, required: true },
     description: { type: String, required: true },
-    splitType: { type: String, enum: ["equal", "percentage", "custom"], required: true },
     splitDetails: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

@@ -2,10 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db";
-import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
 import groupRoutes from "./routes/groupRoutes";
 import expenseRoutes from "./routes/expenseRoutes";
 import settlementRoutes from "./routes/settlementRoutes";
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 connectDB();
@@ -17,7 +18,8 @@ app.use(express.json());
 app.use(cors());
 
 // API Routes
-app.use("/api/auth", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/user",userRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/settlements", settlementRoutes);
