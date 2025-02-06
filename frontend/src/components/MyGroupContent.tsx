@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Input, Space } from "antd";
+import { Table, Button, Modal, Input, Space, Row, Col, Card } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";  // Import useNavigate instead of useHistory
+import { useNavigate } from "react-router-dom";
 import CreateGroupModal from "../components/CreateGroupModal";
-import { fetchGroups, joinGroupRequest, deleteGroupRequest } from "../store/actions/groupActions"; // Add deleteGroupRequest
+import { fetchGroups, joinGroupRequest, deleteGroupRequest } from "../store/actions/groupActions";
 import { RootState } from "../store/rootReducer";
 import { Group } from "../types/groupTypes";
 
@@ -12,7 +12,7 @@ const MyGroupContent: React.FC = () => {
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [groupCode, setGroupCode] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate();  // Use useNavigate hook for navigation
+  const navigate = useNavigate();
   const groups = useSelector((state: RootState) => state.groups);
 
   useEffect(() => {
@@ -83,17 +83,28 @@ const MyGroupContent: React.FC = () => {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
-        <Button type="primary" onClick={handleCreateGroupClick}>
-          Create Group
-        </Button>
-        <Button type="default" onClick={handleJoinGroupClick}>
-          Join Group
-        </Button>
-      </Space>
+    <Card>
+      <Row style={{ marginBottom: 16,marginTop:8 }}>
+        <Col xs={8} sm={12} md={4} style={{marginRight:5}}>
+          <Button type="primary" block onClick={handleCreateGroupClick}>
+            Create Group
+          </Button>
+        </Col>
+        <Col xs={8} sm={12} md={4}>
+          <Button type="default" block onClick={handleJoinGroupClick}>
+            Join Group
+          </Button>
+        </Col>
+      </Row>
 
-      <Table columns={columns} dataSource={groups.groups || []} rowKey="id" />
+      <Table
+        columns={columns}
+        dataSource={groups.groups || []}
+        rowKey="id"
+        bordered
+        pagination={{ pageSize: 5 }}
+        scroll={{ x: 800 }}
+      />
 
       <CreateGroupModal visible={isCreateModalVisible} onCancel={handleCancel} />
 
@@ -110,7 +121,7 @@ const MyGroupContent: React.FC = () => {
           onChange={(e) => setGroupCode(e.target.value)}
         />
       </Modal>
-    </div>
+    </Card>
   );
 };
 

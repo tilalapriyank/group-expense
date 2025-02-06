@@ -9,4 +9,3 @@ export const registerRequest = (name: string, email: string, password: string) =
     type: REGISTER_REQUEST,
     payload: { name, email, password }
 });
-

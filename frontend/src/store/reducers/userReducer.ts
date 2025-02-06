@@ -13,10 +13,9 @@ const initialState: UserState = {
 };
 
 const userReducer = (state = initialState, action: UserActionTypes): UserState => {
-    console.log(action);
     switch (action.type) {
         case FETCH_USER_REQUEST:
-            return { ...state, loading: true };
+            return { ...state, loading: true, error: null }; // Clear error when fetching starts
         case FETCH_USER_SUCCESS:
             return { ...state, loading: false, userName: action.payload };
         case FETCH_USER_FAILURE:
@@ -25,5 +24,6 @@ const userReducer = (state = initialState, action: UserActionTypes): UserState =
             return state;
     }
 };
+
 
 export default userReducer;

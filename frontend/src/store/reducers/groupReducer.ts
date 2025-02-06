@@ -6,7 +6,9 @@ import {
     JOIN_GROUP_FAILURE,
     DELETE_GROUP_REQUEST,
     DELETE_GROUP_SUCCESS,
+    FETCH_GROUP_DETAILS_SUCCESS,
     DELETE_GROUP_FAILURE,
+    FETCH_GROUP_DETAILS_FAILED,
 } from "../actions/groupActions";
 import { Group } from "../../types/groupTypes";
 
@@ -29,7 +31,10 @@ const groupReducer = (state = initialState, action: any): GroupState => {
 
         case FETCH_GROUPS_FAILURE:
             return { ...state, error: action.payload, loading: false };
-
+        case FETCH_GROUP_DETAILS_SUCCESS:
+            return { ...state, groups: action.payload, loading: false, error: undefined };
+        case FETCH_GROUP_DETAILS_FAILED:
+            return { ...state, error: action.payload, loading: false };
         case JOIN_GROUP_REQUEST:
             return { ...state, loading: true, error: undefined };
 

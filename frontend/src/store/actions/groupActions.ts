@@ -3,6 +3,7 @@ import { Group } from "../../types/groupTypes";
 export const FETCH_GROUPS = "FETCH_GROUPS";
 export const FETCH_GROUPS_SUCCESS = "FETCH_GROUPS_SUCCESS";
 export const FETCH_GROUPS_FAILURE = "FETCH_GROUPS_FAILURE";
+
 export const CREATE_GROUP = "CREATE_GROUP";
 export const JOIN_GROUP_REQUEST = "JOIN_GROUP_REQUEST";
 export const JOIN_GROUP_SUCCESS = "JOIN_GROUP_SUCCESS";
@@ -49,7 +50,6 @@ export const createGroup = (name: string) => ({
     payload: name,
 });
 
-
 export const joinGroupRequest = (groupCode: string) => ({
     type: JOIN_GROUP_REQUEST,
     payload: groupCode,
@@ -64,7 +64,6 @@ export const joinGroupFailure = (error: string) => ({
     type: JOIN_GROUP_FAILURE,
     payload: error,
 });
-
 
 export const deleteGroupRequest = (groupId: string) => ({
     type: DELETE_GROUP_REQUEST,

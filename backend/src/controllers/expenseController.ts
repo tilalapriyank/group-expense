@@ -9,9 +9,9 @@ interface AuthRequest extends Request {
 
 export const addExpense = async (req: AuthRequest, res: Response) => {
     try {
-        const { groupId, paidBy, amount, description, splitType, splitDetails } = req.body;
+        const { groupId, paidBy, amount, description, splitDetails } = req.body;
 
-        if (!groupId || !paidBy || !amount || amount <= 0 || !description || !splitType || !splitDetails) {
+        if (!groupId || !paidBy || !amount || amount <= 0 || !description || !splitDetails) {
             return res.status(400).json({ message: "Invalid input values" });
         }
 
@@ -23,7 +23,7 @@ export const addExpense = async (req: AuthRequest, res: Response) => {
             return res.status(403).json({ message: "User is not a member of this group" });
         }
 
-        const expense = new Expense({ groupId, paidBy, amount, description, splitType, splitDetails });
+        const expense = new Expense({ groupId, paidBy, amount, description, splitDetails });
         await expense.save();
 
         await Group.findByIdAndUpdate(groupId, { $push: { expenses: expense._id } });
@@ -58,7 +58,7 @@ export const getGroupExpenses = async (req: AuthRequest, res: Response) => {
 
         const expenses = await Expense.find({ groupId }).populate("paidBy", "name email");
 
-        res.status(200).json(expenses);
+        res.status(200).json({ message: "Expense get successfully", expenses });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

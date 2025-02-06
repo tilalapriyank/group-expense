@@ -17,7 +17,13 @@ interface FetchUserFailureAction {
     error: string;
 }
 
-export type UserActionTypes = 
+export const fetchUserRequest = (userId: string) => ({
+    type: FETCH_USER_REQUEST,
+    userId,
+});
+
+
+export type UserActionTypes =
     | FetchUserRequestAction
     | FetchUserSuccessAction
     | FetchUserFailureAction;

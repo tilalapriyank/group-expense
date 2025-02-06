@@ -6,6 +6,10 @@ import { Layout, Spin, message } from "antd";
 import { RootState } from "./store/rootReducer";
 import Page from "./pages/Page";
 import AuthPage from "./pages/AuthPage";
+import DashboardContent from "./components/DashboardContent";
+import MyGroupContent from "./components/MyGroupContent";
+import ViewGroup from "./components/ViewGroup";
+import ProfilePage from "./components/Profile";
 
 const { Content } = Layout;
 
@@ -32,25 +36,24 @@ const App: React.FC = () => {
           ) : (
             <Routes>
               <Route path="/" element={<AuthPage />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Page />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/groups" element={
-                <ProtectedRoute>
-                  <Page />
-                </ProtectedRoute>
-              } />
-              <Route path="/groups/view/*" element={
-                <ProtectedRoute>
-                  <Page />
-                </ProtectedRoute>
-              } />
-              <Route path="/" element={<Navigate to={token ? "/dashboard" : "/"} />} />
+              <Route path="/u/*" element={<ProtectedRoute>
+                <Page />
+              </ProtectedRoute>}
+              >
+                <Route path="dashboard" element={
+                  <DashboardContent />
+                } />
+                <Route path="groups" element={
+                  <MyGroupContent />
+                } />
+                <Route path="profile" element={
+                  <ProfilePage />
+                } />
+                <Route path="groups/view/:groupId" element={
+                  <ViewGroup />
+                } />
+              </Route>
+              <Route path="/" element={<Navigate to={token ? "/u/dashboard" : "/"} />} />
             </Routes>
           )}
         </Content>

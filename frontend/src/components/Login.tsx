@@ -19,7 +19,7 @@ const Login: React.FC<LoginProps> = ({ toggleForm }) => {
         setLoading(true);
         try {
             login(values.email, values.password);
-            navigate("/dashboard");
+            navigate("/u/dashboard");
             message.success("Login successful!");
         } catch (error) {
             message.error("Invalid email or password!");
