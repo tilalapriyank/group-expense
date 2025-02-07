@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Typography } from "antd";
 import {
-  UserOutlined,
+  WalletOutlined,
   LogoutOutlined,
   AppstoreOutlined,
   DollarCircleOutlined,
+  UsergroupAddOutlined,
+  TeamOutlined,
+  SwapOutlined
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import "antd/dist/reset.css";
@@ -84,8 +87,17 @@ const Sidebar: React.FC = () => {
         <Menu.Item key="dashboard" icon={<AppstoreOutlined />} style={{ color: "#ffffff" }}>
           Dashboard
         </Menu.Item>
-        <Menu.Item key="groups" icon={<UserOutlined />} style={{ color: "#ffffff" }}>
-          My group
+        <Menu.Item key="groups" icon={<TeamOutlined />} style={{ color: "#ffffff" }}>
+          Groups
+        </Menu.Item>
+        <Menu.Item key="viewgroup" icon={<UsergroupAddOutlined />} style={{ color: "#ffffff" }}>
+          View Group
+        </Menu.Item>
+        <Menu.Item key="groupexpenses" icon={<WalletOutlined />} style={{ color: "#ffffff" }}>
+          Group Expenses
+        </Menu.Item>
+        <Menu.Item key="groupsettlements" icon={<SwapOutlined />} style={{ color: "#ffffff" }}>
+          Group Settlements
         </Menu.Item>
         <Menu.Item key="expenses" icon={<DollarCircleOutlined />} style={{ color: "#ffffff" }}>
           My Expenses

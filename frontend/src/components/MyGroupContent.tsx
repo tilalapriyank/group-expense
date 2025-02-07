@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Input, Space, Row, Col, Card } from "antd";
+import { Table, Button, Modal, Input, Popconfirm, Row, Col, Card, Typography } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import CreateGroupModal from "../components/CreateGroupModal";
 import { fetchGroups, joinGroupRequest, deleteGroupRequest } from "../store/actions/groupActions";
 import { RootState } from "../store/rootReducer";
@@ -12,8 +11,8 @@ const MyGroupContent: React.FC = () => {
   const [isJoinModalVisible, setIsJoinModalVisible] = useState(false);
   const [groupCode, setGroupCode] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const groups = useSelector((state: RootState) => state.groups);
+  const { Title } = Typography;
 
   useEffect(() => {
     dispatch(fetchGroups());
@@ -37,10 +36,6 @@ const MyGroupContent: React.FC = () => {
 
   const handleDelete = (id: string) => {
     dispatch(deleteGroupRequest(id));
-  };
-
-  const handleView = (id: string) => {
-    navigate(`view/${id}`);
   };
 
   const columns = [
@@ -71,21 +66,25 @@ const MyGroupContent: React.FC = () => {
       key: "actions",
       render: (_, record: Group) => (
         <>
-          <Button type="link" onClick={() => handleView(record._id)}>
-            View
-          </Button>
-          <Button type="link" danger onClick={() => handleDelete(record._id)}>
-            Delete
-          </Button>
+          <Popconfirm
+            title="Are you sure you want to delete this group?"
+            onConfirm={() => handleDelete(record._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button danger>Delete</Button>
+          </Popconfirm>
         </>
       ),
     },
   ];
 
   return (
-    <Card>
-      <Row style={{ marginBottom: 16,marginTop:8 }}>
-        <Col xs={8} sm={12} md={4} style={{marginRight:5}}>
+    <Card style={{ padding: 20, borderRadius: 8 }}>
+      <Title level={3} style={{ color: "#0288D1" }}>Groups</Title>
+
+      <Row style={{ marginBottom: 16, marginTop: 8 }}>
+        <Col xs={8} sm={12} md={4} style={{ marginRight: 5 }}>
           <Button type="primary" block onClick={handleCreateGroupClick}>
             Create Group
           </Button>

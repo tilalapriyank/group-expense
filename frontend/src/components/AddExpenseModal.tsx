@@ -17,11 +17,12 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ visible, onCancel, gr
   const [amount, setAmount] = useState<number | undefined>();
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  const group = useSelector((state: RootState) => state.groups.groups);
-  const groupMembers = group?.members || []; // Ensure it's always an array
+  const groups = useSelector((state: RootState) => state.groups.groups);
+  const group = groups.find(g => g._id === groupId);
+  const groupMembers = group?.members || [];
 
   const handleAddExpense = () => {
-    if (!description || !paidBy || !amount) return; // Prevent invalid submissions
+    if (!description || !paidBy || !amount) return;
 
     const expense = { description, paidBy, amount, members: selectedMembers };
     dispatch(addExpenseRequest(expense, groupId));

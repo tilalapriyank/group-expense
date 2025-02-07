@@ -3,7 +3,14 @@ import { authSaga } from "./sagas/authSaga";
 import { watchUserSaga } from './sagas/userSaga';
 import { watchGroupActions } from "./sagas/groupSagas";
 import { watchExpenseActions } from "./sagas/expenseSaga";
+import { watchSettlementActions } from "./sagas/settlementSaga";
 
 export default function* rootSaga() {
-  yield all([authSaga(), watchUserSaga(), watchGroupActions(), watchExpenseActions()]);
+  yield all([
+    authSaga(),
+    watchUserSaga(),
+    watchGroupActions(),
+    watchExpenseActions(),
+    watchSettlementActions()
+  ]);
 }

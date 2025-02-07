@@ -10,6 +10,8 @@ import DashboardContent from "./components/DashboardContent";
 import MyGroupContent from "./components/MyGroupContent";
 import ViewGroup from "./components/ViewGroup";
 import MyExpense from "./components/MyExpense";
+import GroupExpense from "./components/GroupExpense";
+import GroupSettlements from "./components/GroupSettlements";
 
 const { Content } = Layout;
 
@@ -46,11 +48,17 @@ const App: React.FC = () => {
                 <Route path="groups" element={
                   <MyGroupContent />
                 } />
+                <Route path="viewgroup" element={
+                  <ViewGroup />
+                } />
                 <Route path="expenses" element={
                   <MyExpense />
                 } />
-                <Route path="groups/view/:groupId" element={
-                  <ViewGroup />
+                <Route path="groupexpenses" element={
+                  <GroupExpense />
+                } />
+                <Route path="groupsettlements" element={
+                  <GroupSettlements />
                 } />
               </Route>
               <Route path="/" element={<Navigate to={token ? "/u/dashboard" : "/"} />} />

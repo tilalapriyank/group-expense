@@ -1,69 +1,61 @@
 import React, { useState, useEffect } from "react";
-import { Card, Typography, Button, Space, Table, Popconfirm, Row, Col } from "antd";
+import { Card, Typography, Button, Table, Popconfirm, Row, Col, Select } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { fetchGroupDetails } from "../store/actions/groupActions";
+import { fetchGroups } from "../store/actions/groupActions";
 import { fetchExpensesRequest, deleteExpenseRequest } from "../store/actions/expenseActions";
 import AddExpenseModal from "../components/AddExpenseModal";
 import { RootState } from "../store/rootReducer";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const ViewGroup: React.FC = () => {
-  const { groupId } = useParams<{ groupId: string }>();
   const dispatch = useDispatch();
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const group = useSelector((state: RootState) => state.groups.groups);
+  const groups = useSelector((state: RootState) => state.groups.groups);
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
 
   useEffect(() => {
-    if (groupId) {
-      dispatch(fetchGroupDetails(groupId));
-      dispatch(fetchExpensesRequest(groupId));
+    dispatch(fetchGroups());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedGroupId) {
+      // dispatch(fetchGroupDetails(selectedGroupId));
+      dispatch(fetchExpensesRequest(selectedGroupId));
     }
-  }, [dispatch, groupId]);
+  }, [dispatch, selectedGroupId]);
+
+  const handleGroupChange = (groupId: string) => {
+    setSelectedGroupId(groupId);
+  };
 
   const handleAddExpenseClick = () => setIsModalVisible(true);
   const handleCancel = () => setIsModalVisible(false);
 
-  const handleDeleteExpense = (expenseId: string, groupId: string) => {
-    dispatch(deleteExpenseRequest(expenseId, groupId));
+  const handleDeleteExpense = (expenseId: string) => {
+    if (selectedGroupId) {
+      dispatch(deleteExpenseRequest(expenseId, selectedGroupId));
+    }
   };
 
-  if (!group) return <div>Loading...</div>;
+  const selectedGroup = groups.find(group => group._id === selectedGroupId);
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   const columns = [
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-      render: (amount: number) => `${amount.toFixed(2)}`, // Format amount
-    },
-    {
-      title: "Paid By",
-      dataIndex: "paidBy",
-      key: "paidBy",
-      render: (paidBy: { name: string }) => paidBy.name, // Show name instead of full object
-    },
-    {
-      title: "Split Count",
-      dataIndex: "splitDetails",
-      key: "splitCount",
-      render: (splitDetails: any[]) => splitDetails.length, // Count the number of splits
-    },
+    { title: "Description", dataIndex: "description", key: "description" },
+    { title: "Amount", dataIndex: "amount", key: "amount", render: (amount: number) => `${amount.toFixed(2)}` },
+    { title: "Paid By", dataIndex: "paidBy", key: "paidBy", render: (paidBy: { name: string }) => paidBy.name },
+    { title: "Split", dataIndex: "splitDetails", key: "splitNames", render: (splitDetails: any[]) => splitDetails.map(split => split.userId.name).join(", ") },
     {
       title: "Action",
       key: "action",
       render: (_: any, record: { _id: string }) => (
         <Popconfirm
           title="Are you sure you want to delete this expense?"
-          onConfirm={() => handleDeleteExpense(record._id, record.groupId)}
+          onConfirm={() => handleDeleteExpense(record._id)}
           okText="Yes"
           cancelText="No"
         >
@@ -75,25 +67,52 @@ const ViewGroup: React.FC = () => {
 
   return (
     <Card style={{ padding: 20, borderRadius: 8 }}>
-      <Row gutter={[16, 16]} style={{ marginBottom: 16, justifyContent: "space-between" }}>
-        <Title level={3} style={{ color: "#0288D1" }}>{group.groupName}</Title>
+            <Title level={3} style={{ color: "#0288D1"}}>View Group</Title>
+
+      <Row gutter={[16, 16]} align="middle" justify="space-between" style={{ marginBottom: 16 }}>
+
+        <Col span={12}>
+          <Select
+            placeholder="Select a group"
+            style={{ width: "200px" }}
+            onChange={handleGroupChange}
+            value={selectedGroupId || undefined}
+          >
+            {groups.map(group => (
+              <Option key={group._id} value={group._id}>{group.groupName}</Option>
+            ))}
+          </Select>
+        </Col>
         <Col xs={8} sm={12} md={4}>
-          <Button type="primary" block onClick={handleAddExpenseClick}>
+          <Button type="primary" block onClick={handleAddExpenseClick} disabled={!selectedGroupId}>
             Add Expense
           </Button>
         </Col>
       </Row>
 
-      <Table
-        dataSource={expenses || []} // Ensure it's always an array
-        columns={columns}
-        rowKey="id"
-        pagination={{ pageSize: 10 }} // Add pagination
-        scroll={{ x: true }} // Make the table horizontally scrollable on smaller screens
-      />
-
-      {/* Add Expense Modal */}
-      <AddExpenseModal visible={isModalVisible} onCancel={handleCancel} groupId={group._id} />
+      {selectedGroupId && selectedGroup ? (
+        <>
+          <Title level={3} style={{ color: "#0288D1" }}>{selectedGroup.groupName}</Title>
+          <Table
+            dataSource={expenses || []}
+            columns={columns}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: true }}
+            summary={() => (
+              <Table.Summary fixed="bottom">
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0}><Text strong>Total Expenses:</Text></Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}><Text strong>{totalExpenses.toFixed(2)}</Text></Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+          />
+          <AddExpenseModal visible={isModalVisible} onCancel={handleCancel} groupId={selectedGroupId} />
+        </>
+      ) : (
+        <Text>Select a group to view details</Text>
+      )}
     </Card>
   );
 };

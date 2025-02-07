@@ -45,7 +45,8 @@ export const getUserGroups = async (req: AuthRequest, res: Response) => {
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized - Invalid token" });
         }
-        const groups = await Group.find({ members: userId });
+        const groups = await Group.find({ members: userId }).populate("members", "name");
+
         res.status(200).json(groups);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });

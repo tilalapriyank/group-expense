@@ -33,14 +33,14 @@ const MyExpense: React.FC = () => {
 
     const myExpenses = expenses
         .filter((expense) =>
-            expense.splitDetails.some((detail) => detail.userId === user?.id)
+            expense.splitDetails.some((detail) => detail.userId._id === user?.id)
         )
         .map((expense) => ({
             key: expense._id,
             description: expense.description,
             amount: expense.amount,
             paidBy: expense.paidBy.name,
-            myShare: expense.splitDetails.find((detail) => detail.userId === user?.id)?.shareAmount || 0,
+            myShare: expense.splitDetails.find((detail) => detail.userId._id === user?.id)?.shareAmount || 0,
         }));
 
     const totalMyShare = myExpenses.reduce((acc, curr) => acc + curr.myShare, 0);
@@ -55,8 +55,8 @@ const MyExpense: React.FC = () => {
 
     return (
         <div className="expense-container">
-            <Card className="expense-card">
-                <Title level={2} className="title">My Expenses</Title>
+            <Card style={{ padding: 20, borderRadius: 8 }}>
+            <Title level={3} style={{ color: "#0288D1" }}>My Expenses</Title>
 
                 <Select
                     placeholder="Select a Group"

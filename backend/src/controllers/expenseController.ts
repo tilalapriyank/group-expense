@@ -56,7 +56,9 @@ export const getGroupExpenses = async (req: AuthRequest, res: Response) => {
             return res.status(403).json({ message: "Unauthorized - You are not a member of this group" });
         }
 
-        const expenses = await Expense.find({ groupId }).populate("paidBy", "name email");
+        const expenses = await Expense.find({ groupId })
+            .populate("paidBy", "name")
+            .populate("splitDetails.userId", "name");
 
         res.status(200).json({ message: "Expense get successfully", expenses });
     } catch (error) {
