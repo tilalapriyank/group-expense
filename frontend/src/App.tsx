@@ -9,7 +9,7 @@ import AuthPage from "./pages/AuthPage";
 import DashboardContent from "./components/DashboardContent";
 import MyGroupContent from "./components/MyGroupContent";
 import ViewGroup from "./components/ViewGroup";
-import ProfilePage from "./components/Profile";
+import MyExpense from "./components/MyExpense";
 
 const { Content } = Layout;
 
@@ -46,8 +46,8 @@ const App: React.FC = () => {
                 <Route path="groups" element={
                   <MyGroupContent />
                 } />
-                <Route path="profile" element={
-                  <ProfilePage />
+                <Route path="expenses" element={
+                  <MyExpense />
                 } />
                 <Route path="groups/view/:groupId" element={
                   <ViewGroup />

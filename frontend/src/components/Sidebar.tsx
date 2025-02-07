@@ -4,6 +4,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
+  DollarCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import "antd/dist/reset.css";
@@ -59,16 +60,16 @@ const Sidebar: React.FC = () => {
         theme="dark"
         onClick={({ key }) => handleMenuClick(key)}
       >
-        {/* Title */}
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: "16px" }}>
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}>
           <Title
             level={4}
             style={{
               color: "#ffffff",
               margin: 0,
+              marginBottom: 20,
               textAlign: "center",
               fontWeight: "bold",
-              fontSize: collapsed ? "0px" : "18px", 
+              fontSize: collapsed ? "0px" : "18px",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -86,8 +87,8 @@ const Sidebar: React.FC = () => {
         <Menu.Item key="groups" icon={<UserOutlined />} style={{ color: "#ffffff" }}>
           My group
         </Menu.Item>
-        <Menu.Item key="profile" icon={<UserOutlined />} style={{ color: "#ffffff" }}>
-          Profile
+        <Menu.Item key="expenses" icon={<DollarCircleOutlined />} style={{ color: "#ffffff" }}>
+          My Expenses
         </Menu.Item>
         <Menu.Item key="logout" icon={<LogoutOutlined />} style={{ color: "#ffffff" }}>
           Logout
