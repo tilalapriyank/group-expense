@@ -48,7 +48,7 @@ const HeaderBar: React.FC = () => {
         background: "linear-gradient(90deg, #013856 0%, #0288D1 100%)",
         padding: "0 20px",
         display: "flex",
-        justifyContent: "flex-end", // Align everything to the right
+        justifyContent: "flex-end",
         alignItems: "center",
       }}
     >
