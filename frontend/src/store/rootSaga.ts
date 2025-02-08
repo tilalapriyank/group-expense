@@ -4,6 +4,7 @@ import { watchUserSaga } from './sagas/userSaga';
 import { watchGroupActions } from "./sagas/groupSagas";
 import { watchExpenseActions } from "./sagas/expenseSaga";
 import { watchSettlementActions } from "./sagas/settlementSaga";
+import { watchProfileActions } from "./sagas/profileSaga";
 
 export default function* rootSaga() {
   yield all([
@@ -11,6 +12,7 @@ export default function* rootSaga() {
     watchUserSaga(),
     watchGroupActions(),
     watchExpenseActions(),
-    watchSettlementActions()
+    watchSettlementActions(),
+    watchProfileActions()
   ]);
 }

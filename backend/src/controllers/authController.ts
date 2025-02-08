@@ -2,13 +2,22 @@ import { Request, Response } from "express";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Profile from "../models/Profile";
 
-export const registerUser = async (req: Request, res: Response) => {
+export const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, upiId } = req.body;
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: "Email already registered!" });
+
         const hashedPassword = await bcrypt.hash(password, 10);
+
         const user = await User.create({ name, email, password: hashedPassword });
-        res.status(201).json({ message: "User registered", user });
+
+        const profile = await Profile.create({ userId: user._id, upiId });
+
+        res.status(201).json({ message: "User registered", user, profile });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -69,33 +69,6 @@ export const getGroupDetails = async (req: AuthRequest, res: Response) => {
     }
 };
 
-export const updateGroup = async (req: AuthRequest, res: Response) => {
-    try {
-        const groupId = req.params.groupId;
-        const { groupName } = req.body;
-
-        if (!groupName) {
-            return res.status(400).json({ message: "Group name is required" });
-        }
-
-        const group = await Group.findById(groupId);
-        if (!group) {
-            return res.status(404).json({ message: "Group not found" });
-        }
-
-        if (req.userId !== String(group.createdBy)) {
-            return res.status(403).json({ message: "Only the group creator can update this group" });
-        }
-
-        group.groupName = groupName;
-        await group.save();
-
-        res.status(200).json({ message: "Group updated successfully", group });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
 export const deleteGroup = async (req: AuthRequest, res: Response) => {
     try {
         const groupId = req.params.groupId;

@@ -1,70 +1,29 @@
 import { message } from "antd";
 import { call, put, takeLatest } from "redux-saga/effects";
 import {
-    ADD_SETTLEMENT_REQUEST,
     ADD_BULK_SETTLEMENT_REQUEST,
     FETCH_SETTLEMENT_REQUEST,
-    FETCH_SETTLEMENTS_BY_PAYER_REQUEST,
-    FETCH_SETTLEMENTS_BY_PAYEE_REQUEST,
-    DELETE_SETTLEMENT_REQUEST,
-    addSettlementSuccess,
-    addSettlementFailure,
+    DELETE_ALL_SETTLEMENTS_REQUEST,
     addBulkSettlementSuccess,
     addBulkSettlementFailure,
     fetchSettlementsSuccess,
     fetchSettlementsFailure,
-    fetchSettlementsByPayerSuccess,
-    fetchSettlementsByPayerFailure,
-    fetchSettlementsByPayeeSuccess,
-    fetchSettlementsByPayeeFailure,
-    deleteSettlementSuccess,
-    deleteSettlementFailure,
+    deleteAllSettlementsSuccess,
+    deleteAllSettlementsFailure,
+    UPDATE_SETTLEMENT_STATUS_REQUEST,
+    updateSettlementStatusSuccess,
+    updateSettlementStatusFailure,
     fetchSettlementsRequest,
+    FETCH_MY_SETTLEMENTS_REQUEST, fetchMySettlementsFailure, fetchMySettlementsSuccess
 } from "../actions/settlementActions";
+import { API_ENDPOINTS } from "../../services/config";
+
 
 const getAuthToken = () => localStorage.getItem("token");
-
-function* addSettlementSaga(action: any) {
-    try {
-        const { settlement, groupId } = action.payload;
-
-        if (!settlement.payer || !settlement.payee || settlement.amount <= 0) {
-            yield put(addSettlementFailure("Invalid settlement data."));
-            message.error("Invalid settlement data.");
-            return;
-        }
-
-        const token = getAuthToken();
-
-        const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ ...settlement, groupId }),
-            }).then((res) => res.json())
-        );
-
-        if (response && response.message === "Settlement created successfully") {
-            yield put(addSettlementSuccess(response.settlement));
-            message.success("Settlement added successfully.");
-            yield put(fetchSettlementsRequest(groupId));
-        } else {
-            yield put(addSettlementFailure(response.message || "Failed to add settlement"));
-            message.error(response.message || "Failed to add settlement");
-        }
-    } catch (error) {
-        yield put(addSettlementFailure(error.message));
-        message.error(error.message);
-    }
-}
 
 function* addBulkSettlementSaga(action: any) {
     try {
         const { settlementsDetails } = action.payload;
-        console.log(settlementsDetails);
         if (!settlementsDetails || settlementsDetails.length === 0) {
             yield put(addBulkSettlementFailure("No settlements provided."));
             message.error("No settlements provided.");
@@ -74,7 +33,7 @@ function* addBulkSettlementSaga(action: any) {
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/bulk`, {
+            fetch(API_ENDPOINTS.SETTLEMENTS.BULK, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -87,6 +46,7 @@ function* addBulkSettlementSaga(action: any) {
         if (response && response.message === "Bulk settlements created successfully") {
             yield put(addBulkSettlementSuccess(response.settlements));
             message.success("Bulk settlements added successfully.");
+            yield put(fetchSettlementsRequest(response.settlements[0].groupId));
         } else {
             yield put(addBulkSettlementFailure(response.message || "Failed to add bulk settlements"));
             message.error(response.message || "Failed to add bulk settlements");
@@ -103,14 +63,13 @@ function* fetchSettlementsSaga(action: any) {
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/group/${groupId}`, {
+            fetch(API_ENDPOINTS.SETTLEMENTS.GROUP(groupId), {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             }).then((res) => res.json())
         );
-
         if (response.message === "Settlements fetched successfully") {
             yield put(fetchSettlementsSuccess(response.settlements));
         } else {
@@ -122,66 +81,13 @@ function* fetchSettlementsSaga(action: any) {
     }
 }
 
-function* fetchSettlementsByPayerSaga(action: any) {
+function* deleteAllSettlementsSaga(action: any) {
     try {
-        const payerId = action.payload;
+        const groupId = action.payload;
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/payer/${payerId}`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }).then((res) => res.json())
-        );
-
-        if (response.message === "Settlements fetched successfully") {
-            yield put(fetchSettlementsByPayerSuccess(response.settlements));
-        } else {
-            yield put(fetchSettlementsByPayerFailure("Failed to fetch settlements"));
-            message.error(response.message || "Failed to fetch settlements");
-        }
-    } catch (error) {
-        yield put(fetchSettlementsByPayerFailure(error.message));
-        message.error(error.message);
-    }
-}
-
-function* fetchSettlementsByPayeeSaga(action: any) {
-    try {
-        const payeeId = action.payload;
-        const token = getAuthToken();
-
-        const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/payee/${payeeId}`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }).then((res) => res.json())
-        );
-
-        if (response.message === "Settlements fetched successfully") {
-            yield put(fetchSettlementsByPayeeSuccess(response.settlements));
-        } else {
-            yield put(fetchSettlementsByPayeeFailure("Failed to fetch settlements"));
-            message.error(response.message || "Failed to fetch settlements");
-        }
-    } catch (error) {
-        yield put(fetchSettlementsByPayeeFailure(error.message));
-        message.error(error.message);
-    }
-}
-
-// ✅ Delete settlement
-function* deleteSettlementSaga(action: any) {
-    try {
-        const settlementId = action.payload;
-        const token = getAuthToken();
-
-        const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/settlements/${settlementId}`, {
+            fetch(API_ENDPOINTS.SETTLEMENTS.GROUP(groupId), {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -189,25 +95,70 @@ function* deleteSettlementSaga(action: any) {
             }).then((res) => res.json())
         );
 
-        if (response.message === "Settlement deleted successfully") {
-            yield put(deleteSettlementSuccess(settlementId));
-            message.success("Settlement deleted successfully.");
+        if (response.message === "All settlements deleted successfully") {
+            yield put(deleteAllSettlementsSuccess(groupId));
+            message.success("All settlements deleted successfully.");
         } else {
-            yield put(deleteSettlementFailure("Failed to delete settlement"));
-            message.error(response.message || "Failed to delete settlement");
+            yield put(deleteAllSettlementsFailure("Failed to delete settlements"));
+            message.error(response.message || "Failed to delete settlements");
         }
     } catch (error) {
-        yield put(deleteSettlementFailure(error.message));
+        yield put(deleteAllSettlementsFailure(error.message));
         message.error(error.message);
     }
 }
 
-// ✅ Watcher saga
+function* updateSettlementStatusSaga(action: any) {
+    try {
+        const { settlementId, status, groupId } = action.payload;
+        const token = getAuthToken();
+
+        const response = yield call(() =>
+            fetch(API_ENDPOINTS.SETTLEMENTS.SINGLE(settlementId), {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ status }),
+            }).then((res) => res.json())
+        );
+
+        if (response.message === "Settlement status updated successfully") {
+            yield put(updateSettlementStatusSuccess(settlementId, status));
+            message.success("Settlement status updated successfully.");
+            if (groupId) {
+                yield put(fetchSettlementsRequest(groupId));
+            }
+        } else {
+            yield put(updateSettlementStatusFailure(response.message || "Failed to update settlement status"));
+            message.error(response.message || "Failed to update settlement status");
+        }
+    } catch (error) {
+        yield put(updateSettlementStatusFailure(error.message));
+        message.error(error.message);
+    }
+}
+
+function* fetchMySettlementsSaga() {
+    try {
+        const token = getAuthToken();
+        const response = yield call(() =>
+            fetch(API_ENDPOINTS.SETTLEMENTS.BASE, {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(res => res.json())
+        );
+        yield put(fetchMySettlementsSuccess(response));
+    } catch (error) {
+        yield put(fetchMySettlementsFailure(error.message));
+        message.error("Failed to fetch settlements");
+    }
+}
+
 export function* watchSettlementActions() {
-    yield takeLatest(ADD_SETTLEMENT_REQUEST, addSettlementSaga);
     yield takeLatest(ADD_BULK_SETTLEMENT_REQUEST, addBulkSettlementSaga);
     yield takeLatest(FETCH_SETTLEMENT_REQUEST, fetchSettlementsSaga);
-    yield takeLatest(FETCH_SETTLEMENTS_BY_PAYER_REQUEST, fetchSettlementsByPayerSaga);
-    yield takeLatest(FETCH_SETTLEMENTS_BY_PAYEE_REQUEST, fetchSettlementsByPayeeSaga);
-    yield takeLatest(DELETE_SETTLEMENT_REQUEST, deleteSettlementSaga);
+    yield takeLatest(DELETE_ALL_SETTLEMENTS_REQUEST, deleteAllSettlementsSaga);
+    yield takeLatest(UPDATE_SETTLEMENT_STATUS_REQUEST, updateSettlementStatusSaga);
+    yield takeLatest(FETCH_MY_SETTLEMENTS_REQUEST, fetchMySettlementsSaga);
 }

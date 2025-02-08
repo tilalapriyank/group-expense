@@ -1,5 +1,7 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import { FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE } from "../actions/userActions";
+import { API_ENDPOINTS } from "../../services/config";
+
 
 const getAuthToken = () => localStorage.getItem("token");
 
@@ -11,7 +13,7 @@ function* fetchUserSaga(action: { type: string; userId: string }) {
             throw new Error("No token provided");
         }
 
-        const response = yield call(fetch, `http://192.168.1.19:5000/api/user/${action.userId}`, {
+        const response = yield call(fetch, API_ENDPOINTS.USER.FETCH_USER(action.userId), {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,

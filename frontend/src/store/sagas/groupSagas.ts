@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { call, put, takeEvery } from "redux-saga/effects";
 import { FETCH_GROUPS, CREATE_GROUP, JOIN_GROUP_REQUEST, DELETE_GROUP_REQUEST, fetchGroupDetailsSuccess, fetchGroupDetailsFailed, FETCH_GROUP_DETAILS } from "../actions/groupActions";
 import { fetchGroupsSuccess, fetchGroups, joinGroupSuccess, joinGroupFailure, deleteGroupSuccess, deleteGroupFailure, fetchGroupsFailure } from "../actions/groupActions";
+import { API_ENDPOINTS } from "../../services/config";
 
 const getAuthToken = () => {
     return localStorage.getItem("token");
@@ -15,7 +16,7 @@ function* fetchGroupsSaga() {
             return;
         }
         const response = yield call(() =>
-            fetch("http://192.168.1.19:5000/api/groups", {
+            fetch(API_ENDPOINTS.GROUPS.BASE, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -46,7 +47,7 @@ function* fetchGroupSaga(action: any) {
         const token = getAuthToken();
         const groupId = action.payload; 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/groups/${groupId}`, {
+            fetch(API_ENDPOINTS.GROUPS.SINGLE(groupId), {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -77,7 +78,7 @@ function* createGroupSaga(action: any) {
         const token = getAuthToken();
         const groupName = { groupName: action.payload };
         const response = yield call(() =>
-            fetch("http://192.168.1.19:5000/api/groups", {
+            fetch(API_ENDPOINTS.GROUPS.BASE, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -107,7 +108,7 @@ function* joinGroupSaga(action: any) {
         const token = getAuthToken();
         const groupCode = { groupCode: action.payload };
         const response = yield call(() =>
-            fetch("http://192.168.1.19:5000/api/groups/join", {
+            fetch(API_ENDPOINTS.GROUPS.JOIN, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -138,7 +139,7 @@ function* deleteGroupSaga(action: any) {
         const token = getAuthToken();
         const groupId = action.payload;
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/groups/${groupId}`, {
+            fetch(API_ENDPOINTS.GROUPS.SINGLE(groupId), {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,

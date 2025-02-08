@@ -13,8 +13,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ visible, onCancel }
     const dispatch = useDispatch();
 
     const handleCreateGroup = () => {
-        if (groupName) {
+        if (groupName.trim()) {
             dispatch(createGroup(groupName));
+            setGroupName(""); 
             onCancel();
         }
     };
@@ -23,13 +24,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ visible, onCancel }
         <Modal
             title="Create New Group"
             visible={visible}
-            onCancel={onCancel}
+            onCancel={() => {
+                setGroupName(""); 
+                onCancel();
+            }}
             onOk={handleCreateGroup}
             okText="Create"
+            destroyOnClose={true} 
         >
             <Form>
                 <Form.Item label="Group Name">
-                    <Input value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+                    <Input
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                    />
                 </Form.Item>
             </Form>
         </Modal>

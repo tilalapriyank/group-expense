@@ -66,38 +66,6 @@ export const getGroupExpenses = async (req: AuthRequest, res: Response) => {
     }
 };
 
-
-export const updateExpense = async (req: AuthRequest, res: Response) => {
-    try {
-        const { expenseId } = req.params;
-        const { amount, description, splitType, splitDetails } = req.body;
-
-        if (!expenseId || !amount || amount <= 0 || !description || !splitType || !splitDetails) {
-            return res.status(400).json({ message: "Invalid input values" });
-        }
-
-        const expense = await Expense.findById(expenseId);
-        if (!expense) {
-            return res.status(404).json({ message: "Expense not found" });
-        }
-
-        if (req.userId !== String(expense.paidBy)) {
-            return res.status(403).json({ message: "Unauthorized to edit this expense" });
-        }
-
-        expense.amount = amount;
-        expense.description = description;
-        expense.splitType = splitType;
-        expense.splitDetails = splitDetails;
-
-        await expense.save();
-
-        res.status(200).json({ message: "Expense updated successfully", expense });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
 export const deleteExpense = async (req: AuthRequest, res: Response) => {
     try {
         const { expenseId } = req.params;

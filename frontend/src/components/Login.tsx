@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Typography, message } from "antd";
 import { buttonStyle, toggleTextStyle } from "../assets/AuthStyles";
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext";
 
 const { Title, Text } = Typography;
 
@@ -18,9 +18,9 @@ const Login: React.FC<LoginProps> = ({ toggleForm }) => {
     const handleSubmit = async (values: { email: string; password: string }) => {
         setLoading(true);
         try {
-            login(values.email, values.password);
-            navigate("/u/dashboard");
+            await login(values.email, values.password);
             message.success("Login successful!");
+            navigate("/u/groups");  // ✅ Redirect after login completes
         } catch (error) {
             message.error("Invalid email or password!");
         } finally {

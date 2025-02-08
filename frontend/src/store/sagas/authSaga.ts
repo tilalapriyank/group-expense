@@ -1,10 +1,11 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import { LOGIN_REQUEST, REGISTER_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE, REGISTER_SUCCESS, REGISTER_FAILURE } from "../../types/authTypes";
 import axios from "axios";
+import { API_ENDPOINTS } from "../../services/config";
 
 const loginApi = async (email: string, password: string) => {
     try {
-        const response = await axios.post("http://192.168.1.19:5000/api/auth/login", { email, password });
+        const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
         console.log("Login Response:", response.data);
         return response.data;
     } catch (error) {
@@ -14,8 +15,8 @@ const loginApi = async (email: string, password: string) => {
 };
 
 
-const registerApi = async (name: string, email: string, password: string) => {
-    const response = await axios.post("http://192.168.1.19:5000/api/auth/register", { name, email, password });
+const registerApi = async (userData: any) => {
+    const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, userData);
     return response.data;
 };
 
@@ -38,15 +39,10 @@ function* loginSaga(action: any): Generator<any, void, any> {
 
 function* registerSaga(action: any): Generator<any, void, any> {
     try {
-        const { name, email, password } = action.payload;
-        const data = yield call(registerApi, name, email, password);
+        const data = yield call(registerApi, action.payload);
         yield put({ type: REGISTER_SUCCESS, payload: data });
     } catch (error: unknown) {
-        let errorMessage = "An error occurred";
-        if (error instanceof Error) {
-            errorMessage = error.message;
-        }
-        yield put({ type: REGISTER_FAILURE, payload: errorMessage });
+        yield put({ type: REGISTER_FAILURE, payload: error.response?.data?.message || "Registration failed" });
     }
 }
 

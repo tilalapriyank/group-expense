@@ -12,6 +12,7 @@ import {
     deleteExpenseFailure,
     fetchExpensesRequest
 } from "../actions/expenseActions";
+import { API_ENDPOINTS } from "../../services/config";
 
 const getAuthToken = () => localStorage.getItem("token");
 
@@ -37,7 +38,7 @@ function* addExpenseSaga(action: any) {
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/expenses/`, {
+            fetch(API_ENDPOINTS.EXPENSES.BASE, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -65,7 +66,7 @@ function* fetchExpensesSaga(action: any) {
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/expenses/${groupId}`, {
+            fetch(API_ENDPOINTS.EXPENSES.GROUP(groupId), {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -89,7 +90,7 @@ function* deleteExpenseSaga(action: any) {
         const token = getAuthToken();
 
         const response = yield call(() =>
-            fetch(`http://192.168.1.19:5000/api/expenses/${expenseId}`, {
+            fetch(API_ENDPOINTS.EXPENSES.DELETE(expenseId), {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Typography } from "antd";
 import {
+  UserOutlined,
   WalletOutlined,
-  LogoutOutlined,
-  AppstoreOutlined,
   DollarCircleOutlined,
   UsergroupAddOutlined,
   TeamOutlined,
-  SwapOutlined
+  SwapOutlined,
+  TransactionOutlined
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import "antd/dist/reset.css";
-import { useAuth } from "../context/AuthContext";
 
 const { Sider } = Layout;
 const { Title } = Typography;
@@ -19,7 +18,6 @@ const { Title } = Typography;
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState("dashboard");
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,11 +29,11 @@ const Sidebar: React.FC = () => {
   }, [location]);
 
   const handleMenuClick = (key: string) => {
-    if (key === "logout") {
-      logout();
-    } else {
-      navigate(`/u/${key}`);
-      setSelectedKey(key);
+    navigate(`/u/${key}`);
+    setSelectedKey(key);
+
+    if (window.innerWidth < 992) {
+      setCollapsed(true);
     }
   };
 
@@ -76,7 +74,7 @@ const Sidebar: React.FC = () => {
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              transition: "font-size 0.3s ease", // Smooth font size change
+              transition: "font-size 0.3s ease",
             }}
           >
             Expense Manager
@@ -84,9 +82,6 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Menu Items */}
-        <Menu.Item key="dashboard" icon={<AppstoreOutlined />} style={{ color: "#ffffff" }}>
-          Dashboard
-        </Menu.Item>
         <Menu.Item key="groups" icon={<TeamOutlined />} style={{ color: "#ffffff" }}>
           Groups
         </Menu.Item>
@@ -102,8 +97,11 @@ const Sidebar: React.FC = () => {
         <Menu.Item key="expenses" icon={<DollarCircleOutlined />} style={{ color: "#ffffff" }}>
           My Expenses
         </Menu.Item>
-        <Menu.Item key="logout" icon={<LogoutOutlined />} style={{ color: "#ffffff" }}>
-          Logout
+        <Menu.Item key="settlements" icon={<TransactionOutlined />} style={{ color: "#ffffff" }}>
+          My Settlements
+        </Menu.Item>
+        <Menu.Item key="profile" icon={<UserOutlined />} style={{ color: "#ffffff" }}>
+          Profile
         </Menu.Item>
       </Menu>
     </Sider>

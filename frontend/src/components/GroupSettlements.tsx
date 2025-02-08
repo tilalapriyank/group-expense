@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/rootReducer";
 import { fetchGroups } from "../store/actions/groupActions";
 import { fetchExpensesRequest } from "../store/actions/expenseActions";
-import { fetchSettlementsRequest, addBulkSettlementRequest } from "../store/actions/settlementActions";
+import { fetchSettlementsRequest, addBulkSettlementRequest, updateSettlementStatusRequest, deleteAllSettlementsRequest } from "../store/actions/settlementActions";
 import { Group } from "../types/groupTypes";
 
 const { Title, Paragraph } = Typography;
@@ -16,8 +16,8 @@ const GroupSettlements: React.FC = () => {
     const { groups, loading: groupsLoading } = useSelector((state: RootState) => state.groups);
     const { expenses, loading: expensesLoading } = useSelector((state: RootState) => state.expenses);
     const { settlements, loading: settlementsLoading } = useSelector((state: RootState) => state.settlements);
-
     const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+    const [generatedSettlements, setGeneratedSettlements] = useState(false); // New state to track settlements
 
     useEffect(() => {
         dispatch(fetchGroups());
@@ -30,8 +30,19 @@ const GroupSettlements: React.FC = () => {
         }
     }, [dispatch, selectedGroup]);
 
+    useEffect(() => {
+        if (settlements.length > 0) {
+            setGeneratedSettlements(true); // Disable the button once settlements are available
+        }
+    }, [settlements]);
+
     const handleGroupChange = (groupId: string) => {
         setSelectedGroup(groupId);
+        setGeneratedSettlements(false); // Reset when a new group is selected
+    };
+
+    const handleStatusChange = (settlementId: string) => {
+        dispatch(updateSettlementStatusRequest(settlementId, "completed"));
     };
 
     const groupMembers = groups.find(group => group._id === selectedGroup)?.members || [];
@@ -47,7 +58,12 @@ const GroupSettlements: React.FC = () => {
             balance: (totalPaid - perPersonShare).toFixed(2),
         };
     });
-
+    const deleteAllSettlements = () => {
+        if (selectedGroup) {
+            dispatch(deleteAllSettlementsRequest(selectedGroup));
+            setGeneratedSettlements(false);
+        }
+    };
     const calculateSettlements = () => {
         if (!selectedGroup) return;
         const creditors: any[] = [];
@@ -55,13 +71,13 @@ const GroupSettlements: React.FC = () => {
 
         settlement.forEach(member => {
             const balance = parseFloat(member.balance);
-            console.log(member);
             if (balance > 0) {
                 creditors.push({ name: member.name, userId: member.key, balance });
             } else if (balance < 0) {
                 debtors.push({ name: member.name, userId: member.key, balance: Math.abs(balance) });
             }
         });
+
         const transactionList: any[] = [];
         let i = 0, j = 0;
         while (i < debtors.length && j < creditors.length) {
@@ -70,6 +86,7 @@ const GroupSettlements: React.FC = () => {
             const amount = Math.min(debtor.balance, creditor.balance);
 
             transactionList.push({
+                groupId: selectedGroup,
                 key: `${debtor.name}-${creditor.name}`,
                 from: debtor.name,
                 to: creditor.name,
@@ -84,8 +101,10 @@ const GroupSettlements: React.FC = () => {
             if (debtor.balance === 0) i++;
             if (creditor.balance === 0) j++;
         }
+
         if (transactionList.length > 0) {
             dispatch(addBulkSettlementRequest({ settlementsDetails: { transactionList } }));
+            setGeneratedSettlements(true);
         }
     };
 
@@ -113,9 +132,19 @@ const GroupSettlements: React.FC = () => {
                         type="primary"
                         style={{ width: "100%" }}
                         onClick={calculateSettlements}
-                        disabled={!selectedGroup || settlements.length > 0}
+                        disabled={!selectedGroup || generatedSettlements || settlements.length > 0}
                     >
                         Generate Settlements
+                    </Button>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <Button
+                        type="primary"
+                        style={{ width: "100%" }}
+                        onClick={deleteAllSettlements}
+                        disabled={!selectedGroup || !(settlements.length > 0)}
+                    >
+                        Delete All
                     </Button>
                 </Col>
             </Row>
@@ -132,16 +161,36 @@ const GroupSettlements: React.FC = () => {
                                 { title: "From", dataIndex: "from", key: "from" },
                                 { title: "To", dataIndex: "to", key: "to" },
                                 { title: "Amount", dataIndex: "amount", key: "amount" },
-                                { title: "Status", dataIndex: "status", key: "status" }
+                                {
+                                    title: "Status",
+                                    dataIndex: "status",
+                                    key: "status",
+                                    render: (text) => (
+                                        <span style={{ fontWeight: "bold", color: text === "completed" ? "green" : "orange" }}>
+                                            {text.charAt(0).toUpperCase() + text.slice(1)}
+                                        </span>
+                                    )
+                                },
+                                {
+                                    title: "Action",
+                                    key: "action",
+                                    render: (_, record) => (
+                                        <Button
+                                            type="link"
+                                            onClick={() => handleStatusChange(record.key)}
+                                            disabled={record.status === "completed"}
+                                        >
+                                            Mark as Completed
+                                        </Button>
+                                    )
+                                }
                             ]}
                             dataSource={settlements.map(settlement => ({
                                 key: settlement._id,
                                 from: settlement.payer?.name || "Unknown",
                                 to: settlement.payee?.name || "Unknown",
                                 amount: `₹${settlement.amount.toFixed(2)}`,
-                                status: settlement.status === "completed"
-                                    ? <span style={{ color: "green", fontWeight: "bold" }}>Completed</span>
-                                    : <span style={{ color: "orange", fontWeight: "bold" }}>Pending</span>
+                                status: settlement.status
                             }))}
                             pagination={false}
                             style={{ marginTop: "20px" }}

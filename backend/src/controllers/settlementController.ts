@@ -1,42 +1,12 @@
 import { Request, Response } from "express";
 import Settlement from "../models/Settlement";
 import Group from "../models/Group";
-import mongoose from "mongoose";
+import Profile from "../models/Profile";
 
 interface AuthRequest extends Request {
     userId?: string;
 }
 
-// Create a single settlement
-export const createSettlement = async (req: AuthRequest, res: Response) => {
-    try {
-        const { groupId, payer, payee, amount } = req.body;
-
-        if (!groupId || !payer || !payee || !amount || amount <= 0) {
-            return res.status(400).json({ message: "Invalid input values" });
-        }
-
-        if (req.userId !== payer && req.userId !== payee) {
-            return res.status(403).json({ message: "Unauthorized to settle this payment" });
-        }
-
-        const group = await Group.findById(groupId);
-        if (!group) {
-            return res.status(404).json({ message: "Group not found" });
-        }
-
-        if (!group.members.includes(payer) || !group.members.includes(payee)) {
-            return res.status(400).json({ message: "Payer or Payee is not a member of this group" });
-        }
-
-        const settlement = new Settlement({ groupId, payer, payee, amount });
-        await settlement.save();
-
-        res.status(201).json({ message: "Settlement created successfully", settlement });
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
 
 // Bulk create settlements
 export const createBulkSettlements = async (req: AuthRequest, res: Response) => {
@@ -84,31 +54,7 @@ export const getGroupSettlements = async (req: AuthRequest, res: Response) => {
 
         const settlements = await Settlement.find({ groupId }).populate("payer payee", "name email");
 
-        res.status(200).json(settlements);
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
-// Get settlements by payer
-export const getSettlementsByPayer = async (req: AuthRequest, res: Response) => {
-    try {
-        const payerId = req.params.payerId;
-        const settlements = await Settlement.find({ payer: payerId }).populate("groupId payee", "groupName name email");
-
-        res.status(200).json(settlements);
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-};
-
-// Get settlements by payee
-export const getSettlementsByPayee = async (req: AuthRequest, res: Response) => {
-    try {
-        const payeeId = req.params.payeeId;
-        const settlements = await Settlement.find({ payee: payeeId }).populate("groupId payer", "groupName name email");
-
-        res.status(200).json(settlements);
+        res.status(200).json({ message: "Settlements fetched successfully", settlements });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
@@ -120,53 +66,91 @@ export const updateSettlement = async (req: AuthRequest, res: Response) => {
         const { settlementId } = req.params;
         const { status } = req.body;
 
+        // Validate request parameters
         if (!settlementId || !status) {
             return res.status(400).json({ message: "Settlement ID and status are required" });
         }
 
+        // Ensure status is either "pending" or "completed"
         if (!["pending", "completed"].includes(status)) {
-            return res.status(400).json({ message: "Invalid status value" });
+            return res.status(400).json({ message: "Invalid status value. Allowed values: pending, completed" });
         }
 
+        // Fetch the settlement
         const settlement = await Settlement.findById(settlementId);
         if (!settlement) {
             return res.status(404).json({ message: "Settlement not found" });
         }
 
-        if (req.userId !== String(settlement.payer) && req.userId !== String(settlement.payee)) {
+        // Check if the user is authorized to update the settlement
+        const isAuthorized = req.userId === String(settlement.payer) || req.userId === String(settlement.payee);
+        if (!isAuthorized) {
             return res.status(403).json({ message: "Unauthorized to update this settlement" });
         }
 
+        // Prevent updating an already completed settlement
         if (settlement.status === "completed") {
             return res.status(400).json({ message: "This settlement is already completed" });
         }
 
+        // Update settlement status
         settlement.status = status;
         await settlement.save();
 
-        res.status(200).json({ message: "Settlement updated successfully", settlement });
+        return res.status(200).json({
+            message: "Settlement status updated successfully",
+            settlement,
+        });
+
+    } catch (error) {
+        console.error("Error updating settlement:", error);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+// Delete settlement
+export const deleteAllSettlements = async (req: AuthRequest, res: Response) => {
+    try {
+        const { groupId } = req.params;
+        const settlements = await Settlement.find({ groupId });
+        if (settlements.length === 0) {
+            return res.status(404).json({ message: "No settlements found for this group" });
+        }
+        await Settlement.deleteMany({ groupId });
+        res.status(200).json({ message: "All settlements deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
-// Delete settlement
-export const deleteSettlement = async (req: AuthRequest, res: Response) => {
+export const getMySettlements = async (req: AuthRequest, res: Response) => {
     try {
-        const { settlementId } = req.params;
+        const settlements = await Settlement.find({
+            $or: [{ payer: req.userId }, { payee: req.userId }]
+        })
+            .populate("groupId", "groupName")
+            .populate("payer", "name")
+            .populate("payee", "name")
+            .lean(); // Converts Mongoose document to a plain object for easier manipulation
 
-        const settlement = await Settlement.findById(settlementId);
-        if (!settlement) {
-            return res.status(404).json({ message: "Settlement not found" });
-        }
+        // Fetch Payee UPI IDs
+        const payeeIds = settlements.map(settlement => settlement.payee._id);
+        const profiles = await Profile.find({ userId: { $in: payeeIds } }).select("userId upiId").lean();
 
-        if (req.userId !== String(settlement.payer) && req.userId !== String(settlement.payee)) {
-            return res.status(403).json({ message: "Unauthorized to delete this settlement" });
-        }
+        // Map UPI IDs to settlements
+        const settlementsWithUPI = settlements.map(settlement => {
+            const payeeProfile = profiles.find(profile => profile.userId.toString() === settlement.payee._id.toString());
+            return {
+                ...settlement,
+                payee: {
+                    ...settlement.payee,
+                    upiId: payeeProfile ? payeeProfile.upiId : null
+                }
+            };
+        });
 
-        await settlement.deleteOne();
-
-        res.status(200).json({ message: "Settlement deleted successfully" });
+        res.status(200).json(settlementsWithUPI);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
