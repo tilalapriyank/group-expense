@@ -9,6 +9,12 @@ import { Group } from "../types/groupTypes";
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
+// Define Member Type
+interface Member {
+    _id: string;
+    name: string;
+}
+
 const GroupExpense: React.FC = () => {
     const dispatch = useDispatch();
     const { groups, loading } = useSelector((state: RootState) => state.groups);
@@ -20,8 +26,10 @@ const GroupExpense: React.FC = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        dispatch(fetchGroupDetails(selectedGroup));
-    }, [dispatch]);
+        if (selectedGroup) {
+            dispatch(fetchGroupDetails(selectedGroup));
+        }
+    }, [dispatch, selectedGroup]);
 
     useEffect(() => {
         if (selectedGroup) {
@@ -33,12 +41,15 @@ const GroupExpense: React.FC = () => {
         setSelectedGroup(groupId);
     };
 
-    const groupMembers = groups.find(group => group._id === selectedGroup)?.members || [];
+    const groupMembers: Member[] = groups.find(group => group._id === selectedGroup)?.members || [];
     const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const perPersonShare = totalExpense / groupMembers.length;
+    const perPersonShare = groupMembers.length > 0 ? totalExpense / groupMembers.length : 0;
 
-    const settlements = groupMembers.map(member => {
-        const totalPaid = expenses.filter(expense => expense.paidBy._id === member._id).reduce((sum, exp) => sum + exp.amount, 0);
+    const settlements = groupMembers.map((member: Member) => {
+        const totalPaid = expenses
+            .filter(expense => typeof expense.paidBy === "object" && expense.paidBy._id === member._id)
+            .reduce((sum, exp) => sum + exp.amount, 0);
+
         const balance = (totalPaid - perPersonShare).toFixed(2);
 
         return {
