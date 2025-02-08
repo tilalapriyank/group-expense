@@ -9,6 +9,14 @@ import { Group } from "../types/groupTypes";
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
 
+interface Settlement {
+    key: string;
+    name: string;
+    paid: string;
+    share: string;
+    balance: string;
+}
+
 const GroupExpense: React.FC = () => {
     const dispatch = useDispatch();
     const { groups, loading } = useSelector((state: RootState) => state.groups);
@@ -20,8 +28,10 @@ const GroupExpense: React.FC = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        dispatch(fetchGroupDetails(selectedGroup));
-    }, [dispatch]);
+        if (selectedGroup) {
+            dispatch(fetchGroupDetails(selectedGroup));
+        }
+    }, [dispatch, selectedGroup]);
 
     useEffect(() => {
         if (selectedGroup) {
@@ -33,12 +43,16 @@ const GroupExpense: React.FC = () => {
         setSelectedGroup(groupId);
     };
 
-    const groupMembers = groups.find(group => group._id === selectedGroup)?.members || [];
-    const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const perPersonShare = totalExpense / groupMembers.length;
+    const group = groups.find((g) => g._id === selectedGroup);
+    const groupMembers = group?.members ?? [];
 
-    const settlements = groupMembers.map(member => {
-        const totalPaid = expenses.filter(expense => expense.paidBy._id === member._id).reduce((sum, exp) => sum + exp.amount, 0);
+    const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const perPersonShare = groupMembers.length > 0 ? totalExpense / groupMembers.length : 0;
+
+    const settlements: Settlement[] = groupMembers.map((member) => {
+        const totalPaid = expenses
+            .filter((expense) => expense.paidBy?._id === member._id)
+            .reduce((sum, exp) => sum + exp.amount, 0);
         const balance = (totalPaid - perPersonShare).toFixed(2);
 
         return {
@@ -62,9 +76,12 @@ const GroupExpense: React.FC = () => {
                 style={{ width: "200px", marginBottom: "20px" }}
                 onChange={handleGroupChange}
                 loading={loading}
+                value={selectedGroup ?? undefined}
             >
                 {groups.map((group: Group) => (
-                    <Option key={group._id} value={group._id}>{group.groupName}</Option>
+                    <Option key={group._id} value={group._id}>
+                        {group.groupName}
+                    </Option>
                 ))}
             </Select>
 
