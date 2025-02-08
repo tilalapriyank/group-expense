@@ -1,6 +1,6 @@
 import { FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE, UserActionTypes } from "../actions/userActions";
 
-interface UserState {
+export interface UserState {
     userName: string | null;
     loading: boolean;
     error: string | null;
@@ -12,10 +12,10 @@ const initialState: UserState = {
     error: null,
 };
 
-const userReducer = (state = initialState, action: UserActionTypes): UserState => {
+const userReducer = (state: UserState = initialState, action: UserActionTypes): UserState => {
     switch (action.type) {
         case FETCH_USER_REQUEST:
-            return { ...state, loading: true, error: null }; // Clear error when fetching starts
+            return { ...state, loading: true, error: null };
         case FETCH_USER_SUCCESS:
             return { ...state, loading: false, userName: action.payload };
         case FETCH_USER_FAILURE:
@@ -24,6 +24,5 @@ const userReducer = (state = initialState, action: UserActionTypes): UserState =
             return state;
     }
 };
-
 
 export default userReducer;
