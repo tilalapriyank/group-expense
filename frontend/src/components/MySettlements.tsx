@@ -37,10 +37,8 @@ const MySettlements: React.FC = () => {
             return;
         }
         const upiUrl = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&tn=${encodeURIComponent(groupName)}&am=${amount.toFixed(2)}&cu=INR`;
-        console.log(`UPI URL: ${upiUrl}`);
 
-        window.location.href = upiUrl;
-
+        window.open(upiUrl, "_blank");
         setPendingPaymentId(settlementId);
     };
     interface Settlement {
