@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Card, Typography, Row, Col, Spin, Input, Button, Modal, Form } from "antd";
 import Avatar from "react-avatar";
-import { UserOutlined, MailOutlined, BankOutlined , LockOutlined } from "@ant-design/icons";
+import { UserOutlined, MailOutlined, BankOutlined, LockOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfileRequest, updateUserRequest, updatePasswordRequest } from "../store/actions/profileActions";
 import { RootState } from "../store/rootReducer";
-
+import { AppDispatch } from "../store/store";
 const { Title, Text } = Typography;
 
 const Profile: React.FC = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const { user, loading } = useSelector((state: RootState) => state.profile);
 
     const [editableUser, setEditableUser] = useState({
+        userId:"",
+        id: "",
         name: "",
         email: "",
         upiId: "",
@@ -28,6 +30,8 @@ const Profile: React.FC = () => {
     useEffect(() => {
         if (user) {
             setEditableUser({
+                userId: user.id,
+                id: user.id,
                 name: user.userId.name || "",
                 email: user.userId.email || "",
                 upiId: user.upiId || "",
@@ -101,7 +105,7 @@ const Profile: React.FC = () => {
                                             />
                                         </Form.Item>
 
-                                        <Form.Item label={<Text strong><BankOutlined  /> UPI ID</Text>}>
+                                        <Form.Item label={<Text strong><BankOutlined /> UPI ID</Text>}>
                                             <Input
                                                 size="large"
                                                 value={editableUser.upiId}

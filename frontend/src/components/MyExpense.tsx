@@ -46,24 +46,54 @@ const MyExpense: React.FC = () => {
     const totalMyShare = myExpenses.reduce((acc, curr) => acc + curr.myShare, 0);
 
     const handlePrint = () => {
-        const tableContent = document.getElementById("expense-table").innerHTML;
+        const tableElement = document.getElementById("expense-table");
+
+        if (!tableElement) {
+            console.error("Table element not found");
+            return;
+        }
+
+        const tableContent = tableElement.innerHTML;
         const newWindow = window.open("", "", "width=800,height=600");
-        newWindow.document.write(`<html><head><title>Print Expenses</title></head><body>${tableContent}</body></html>`);
+
+        if (!newWindow) {
+            console.error("Failed to open new window");
+            return;
+        }
+
+        newWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Expenses</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    ${tableContent}
+                </body>
+            </html>
+        `);
+
         newWindow.document.close();
         newWindow.print();
     };
 
+
     return (
         <div className="expense-container">
             <Card style={{ padding: 20, borderRadius: 8 }}>
-            <Title level={3} style={{ color: "#0288D1" }}>My Expenses</Title>
+                <Title level={3} style={{ color: "#0288D1" }}>My Expenses</Title>
 
                 <Select
                     placeholder="Select a Group"
                     className="group-select"
                     onChange={handleGroupChange}
                     loading={loading}
-                    style={{ marginBottom: "10px",width:"200px" }}
+                    style={{ marginBottom: "10px", width: "200px" }}
                 >
                     {groups.map((group: Group) => (
                         <Option key={group._id} value={group._id}>{group.groupName}</Option>

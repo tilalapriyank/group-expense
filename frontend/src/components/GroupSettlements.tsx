@@ -32,13 +32,13 @@ const GroupSettlements: React.FC = () => {
 
     useEffect(() => {
         if (settlements.length > 0) {
-            setGeneratedSettlements(true); // Disable the button once settlements are available
+            setGeneratedSettlements(true);
         }
     }, [settlements]);
 
     const handleGroupChange = (groupId: string) => {
         setSelectedGroup(groupId);
-        setGeneratedSettlements(false); // Reset when a new group is selected
+        setGeneratedSettlements(false);
     };
 
     const handleStatusChange = (settlementId: string) => {
@@ -46,31 +46,53 @@ const GroupSettlements: React.FC = () => {
     };
 
     const groupMembers = groups.find(group => group._id === selectedGroup)?.members || [];
-    const totalExpense = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const perPersonShare = totalExpense / groupMembers.length;
-    const settlement = groupMembers.map(member => {
-        const totalPaid = expenses.filter(expense => expense.paidBy._id === member._id).reduce((sum, exp) => sum + exp.amount, 0);
+    const memberExpenses: Record<string, { paid: number; share: number }> = {};
+
+    groupMembers.forEach((member: { _id: string }) => {
+        memberExpenses[member._id] = { paid: 0, share: 0 };
+    });
+
+    expenses.forEach(expense => {
+        if (expense.paidBy && memberExpenses[expense.paidBy._id]) {
+            memberExpenses[expense.paidBy._id].paid += expense.amount;
+        }
+
+        expense.splitDetails.forEach(split => {
+            if (split.userId && memberExpenses[split.userId._id]) {
+                memberExpenses[split.userId._id].share += split.shareAmount;
+            }
+        });
+    });
+
+    const settlement = groupMembers.map((member: { _id: string; name: string }) => {
+        const expensesData = memberExpenses[member._id] || { paid: 0, share: 0 };
+        const balance = (expensesData.paid - expensesData.share).toFixed(2);
+
         return {
             key: member._id,
             name: member.name,
-            paid: totalPaid.toFixed(2),
-            share: perPersonShare.toFixed(2),
-            balance: (totalPaid - perPersonShare).toFixed(2),
+            paid: expensesData.paid.toFixed(2),
+            share: expensesData.share.toFixed(2),
+            balance,
         };
     });
+
+
     const deleteAllSettlements = () => {
         if (selectedGroup) {
             dispatch(deleteAllSettlementsRequest(selectedGroup));
             setGeneratedSettlements(false);
         }
     };
+
     const calculateSettlements = () => {
         if (!selectedGroup) return;
+
         const creditors: any[] = [];
         const debtors: any[] = [];
 
-        settlement.forEach(member => {
-            const balance = parseFloat(member.balance);
+        settlement.forEach((member: { name: string; key: string; balance: number | string }) => {
+            const balance = parseFloat(member.balance as string);
             if (balance > 0) {
                 creditors.push({ name: member.name, userId: member.key, balance });
             } else if (balance < 0) {
@@ -78,8 +100,10 @@ const GroupSettlements: React.FC = () => {
             }
         });
 
+
         const transactionList: any[] = [];
         let i = 0, j = 0;
+
         while (i < debtors.length && j < creditors.length) {
             const debtor = debtors[i];
             const creditor = creditors[j];
@@ -90,23 +114,26 @@ const GroupSettlements: React.FC = () => {
                 key: `${debtor.name}-${creditor.name}`,
                 from: debtor.name,
                 to: creditor.name,
-                amount: `${amount.toFixed(2)}`,
+                amount: amount.toFixed(2),
                 payer: debtor.userId,
                 payee: creditor.userId,
+                directPay: debtor.balance === creditor.balance,
             });
 
             debtor.balance -= amount;
             creditor.balance -= amount;
 
-            if (debtor.balance === 0) i++;
-            if (creditor.balance === 0) j++;
+            if (debtor.balance <= 0) i++;
+            if (creditor.balance <= 0) j++;
         }
 
         if (transactionList.length > 0) {
-            dispatch(addBulkSettlementRequest({ settlementsDetails: { transactionList } }));
+            dispatch(addBulkSettlementRequest({ transactionList }));
             setGeneratedSettlements(true);
         }
     };
+
+
 
     return (
         <Card style={{ padding: "20px", borderRadius: "8px", width: "100%", background: "#ffffff" }}>
@@ -174,16 +201,17 @@ const GroupSettlements: React.FC = () => {
                                 {
                                     title: "Action",
                                     key: "action",
-                                    render: (_, record) => (
+                                    render: (_, record: { key?: string; status: string }) => (
                                         <Button
                                             type="link"
-                                            onClick={() => handleStatusChange(record.key)}
+                                            onClick={() => record.key && handleStatusChange(record.key)}
                                             disabled={record.status === "completed"}
                                         >
                                             Mark as Completed
                                         </Button>
                                     )
                                 }
+
                             ]}
                             dataSource={settlements.map(settlement => ({
                                 key: settlement._id,

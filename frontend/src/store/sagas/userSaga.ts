@@ -2,10 +2,18 @@ import { call, put, takeEvery } from "redux-saga/effects";
 import { FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE } from "../actions/userActions";
 import { API_ENDPOINTS } from "../../services/config";
 
+const getAuthToken = (): string | null => localStorage.getItem("token");
 
-const getAuthToken = () => localStorage.getItem("token");
+interface FetchUserAction {
+    type: string;
+    userId: string;
+}
 
-function* fetchUserSaga(action: { type: string; userId: string }) {
+interface UserResponse {
+    name?: string;
+}
+
+function* fetchUserSaga(action: FetchUserAction): Generator<any, void, any> {
     try {
         const token = getAuthToken();
 
@@ -13,7 +21,7 @@ function* fetchUserSaga(action: { type: string; userId: string }) {
             throw new Error("No token provided");
         }
 
-        const response = yield call(fetch, API_ENDPOINTS.USER.FETCH_USER(action.userId), {
+        const response: Response = yield call(fetch, API_ENDPOINTS.USER.FETCH_USER(action.userId), {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -25,9 +33,9 @@ function* fetchUserSaga(action: { type: string; userId: string }) {
             throw new Error(`Request failed with status: ${response.status}`);
         }
 
-        const data = yield call([response, "json"]);
+        const data: UserResponse[] = yield call([response, "json"]);
 
-        if (data[0]?.name) {
+        if (Array.isArray(data) && data[0]?.name) {
             yield put({ type: FETCH_USER_SUCCESS, payload: data[0].name });
         } else {
             throw new Error("User not found");
@@ -37,6 +45,6 @@ function* fetchUserSaga(action: { type: string; userId: string }) {
     }
 }
 
-export function* watchUserSaga() {
+export function* watchUserSaga(): Generator {
     yield takeEvery(FETCH_USER_REQUEST, fetchUserSaga);
 }

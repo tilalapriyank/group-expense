@@ -1,21 +1,25 @@
 import { message } from 'antd';
-import { call, put, takeEvery } from "redux-saga/effects";
-import { FETCH_GROUPS, CREATE_GROUP, JOIN_GROUP_REQUEST, DELETE_GROUP_REQUEST, fetchGroupDetailsSuccess, fetchGroupDetailsFailed, FETCH_GROUP_DETAILS } from "../actions/groupActions";
-import { fetchGroupsSuccess, fetchGroups, joinGroupSuccess, joinGroupFailure, deleteGroupSuccess, deleteGroupFailure, fetchGroupsFailure } from "../actions/groupActions";
+import { call, put, takeEvery, Effect } from "redux-saga/effects";
+import {
+    FETCH_GROUPS, CREATE_GROUP, JOIN_GROUP_REQUEST, DELETE_GROUP_REQUEST,
+    fetchGroupDetailsSuccess, fetchGroupDetailsFailed, FETCH_GROUP_DETAILS,
+    fetchGroupsSuccess, fetchGroups, joinGroupSuccess, joinGroupFailure,
+    deleteGroupSuccess, deleteGroupFailure, fetchGroupsFailure
+} from "../actions/groupActions";
 import { API_ENDPOINTS } from "../../services/config";
 
-const getAuthToken = () => {
+const getAuthToken = (): string | null => {
     return localStorage.getItem("token");
 };
 
-function* fetchGroupsSaga() {
+function* fetchGroupsSaga(): Generator<Effect, void, unknown> {
     try {
         const token = getAuthToken();
         if (!token) {
             console.error("Authorization token is missing.");
             return;
         }
-        const response = yield call(() =>
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.GROUPS.BASE, {
                 method: "GET",
                 headers: {
@@ -29,7 +33,6 @@ function* fetchGroupsSaga() {
             })
         );
 
-
         if (Array.isArray(response)) {
             yield put(fetchGroupsSuccess(response));
         } else {
@@ -41,12 +44,11 @@ function* fetchGroupsSaga() {
     }
 }
 
-
-function* fetchGroupSaga(action: any) {
+function* fetchGroupSaga(action: any): Generator<Effect, void, unknown> {
     try {
         const token = getAuthToken();
-        const groupId = action.payload; 
-        const response = yield call(() =>
+        const groupId = action.payload;
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.GROUPS.SINGLE(groupId), {
                 method: "GET",
                 headers: {
@@ -61,7 +63,7 @@ function* fetchGroupSaga(action: any) {
         );
 
         if (response && response.groupName) {
-            yield put(fetchGroupDetailsSuccess(response)); 
+            yield put(fetchGroupDetailsSuccess(response));
         } else {
             console.error("Invalid response format: Expected a group object.");
             yield put(fetchGroupDetailsFailed("Invalid response format"));
@@ -73,11 +75,11 @@ function* fetchGroupSaga(action: any) {
 }
 
 // Create group saga
-function* createGroupSaga(action: any) {
+function* createGroupSaga(action: any): Generator<Effect, void, unknown> {
     try {
         const token = getAuthToken();
         const groupName = { groupName: action.payload };
-        const response = yield call(() =>
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.GROUPS.BASE, {
                 method: "POST",
                 headers: {
@@ -97,17 +99,17 @@ function* createGroupSaga(action: any) {
             console.error("Failed to create group");
             message.error('Failed to create group.');
         }
-    } catch (e) {
-        console.error("Failed to create group", e);
+    } catch (error) {
+        console.error("Failed to create group", error);
     }
 }
 
 // Join group saga
-function* joinGroupSaga(action: any) {
+function* joinGroupSaga(action: any): Generator<Effect, void, unknown> {
     try {
         const token = getAuthToken();
         const groupCode = { groupCode: action.payload };
-        const response = yield call(() =>
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.GROUPS.JOIN, {
                 method: "POST",
                 headers: {
@@ -120,7 +122,7 @@ function* joinGroupSaga(action: any) {
 
         console.log("Join Group Response:", response);
 
-        if (response && response.message == "Successfully joined the group") {
+        if (response && response.message === "Successfully joined the group") {
             yield put(joinGroupSuccess(response.group));
             yield put(fetchGroups());
             message.success('Successfully joined the group.');
@@ -129,16 +131,17 @@ function* joinGroupSaga(action: any) {
             console.error("Failed to join group");
         }
     } catch (error) {
-        yield put(joinGroupFailure(error.message));
-        console.error("Failed to join group:", error);
+        const err = error as Error; // Explicitly assert the error as type Error
+        yield put(joinGroupFailure(err.message));
+        console.error("Failed to join group:", err);
     }
 }
 
-function* deleteGroupSaga(action: any) {
+function* deleteGroupSaga(action: any): Generator<Effect, void, unknown> {
     try {
         const token = getAuthToken();
         const groupId = action.payload;
-        const response = yield call(() =>
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.GROUPS.SINGLE(groupId), {
                 method: "DELETE",
                 headers: {
@@ -147,7 +150,7 @@ function* deleteGroupSaga(action: any) {
             }).then((res) => res.json())
         );
 
-        if (response && response.message == "Group deleted successfully") {
+        if (response && response.message === "Group deleted successfully") {
             yield put(deleteGroupSuccess(groupId));
             yield put(fetchGroups());
         } else {
@@ -155,13 +158,14 @@ function* deleteGroupSaga(action: any) {
             message.error("Only the group creator can delete this group.");
         }
     } catch (error) {
-        yield put(deleteGroupFailure(error.message));
-        console.error("Failed to delete group:", error);
+        const err = error as Error;
+        yield put(deleteGroupFailure(err.message));
+        console.error("Failed to delete group:", err);
     }
 }
 
 // Watcher saga for all group actions
-export function* watchGroupActions() {
+export function* watchGroupActions(): Generator<Effect, void, unknown> {
     yield takeEvery(FETCH_GROUPS, fetchGroupsSaga);
     yield takeEvery(CREATE_GROUP, createGroupSaga);
     yield takeEvery(JOIN_GROUP_REQUEST, joinGroupSaga);

@@ -4,7 +4,7 @@ import Profile from "../models/Profile";
 import User from "../models/User";
 
 interface AuthRequest extends Request {
-    user?: { userId: string };
+    userId?: string
 }
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
@@ -27,9 +27,9 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
     try {
         await User.findByIdAndUpdate(req.userId, { name, email });
-        
+
         const updatedProfile = await Profile.findOneAndUpdate(
-            { userId: req.user?.userId },
+            { userId: req.userId },
             { upiId },
             { new: true }
         );

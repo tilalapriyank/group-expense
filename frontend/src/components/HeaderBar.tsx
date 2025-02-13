@@ -7,11 +7,12 @@ import { fetchUserRequest } from "../store/actions/userActions";
 import { RootState } from "../store/rootReducer";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AppDispatch } from "../store/store";
 
 const { Header } = Layout;
 
 const HeaderBar: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate();
   const { userName, loading } = useSelector((state: RootState) => state.user);
   const { user, logout } = useAuth();

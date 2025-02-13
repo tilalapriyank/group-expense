@@ -64,7 +64,7 @@ const MyGroupContent: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_, record: Group) => (
+      render: (_: any, record: Group) => (
         <>
           <Popconfirm
             title="Are you sure you want to delete this group?"

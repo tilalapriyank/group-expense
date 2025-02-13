@@ -8,9 +8,12 @@ const loginApi = async (email: string, password: string) => {
         const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
         console.log("Login Response:", response.data);
         return response.data;
-    } catch (error) {
-        console.error("Login API Error:", error.response?.data || error.message);
-        throw error;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            console.error("Login API Error:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.message || error.message);
+        }
+        throw new Error("An unexpected error occurred");
     }
 };
 
@@ -42,7 +45,13 @@ function* registerSaga(action: any): Generator<any, void, any> {
         const data = yield call(registerApi, action.payload);
         yield put({ type: REGISTER_SUCCESS, payload: data });
     } catch (error: unknown) {
-        yield put({ type: REGISTER_FAILURE, payload: error.response?.data?.message || "Registration failed" });
+        let errorMessage = "Registration failed";
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data?.message || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        yield put({ type: REGISTER_FAILURE, payload: errorMessage });
     }
 }
 

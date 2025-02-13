@@ -16,7 +16,8 @@ import { API_ENDPOINTS } from "../../services/config";
 
 const getAuthToken = () => localStorage.getItem("token");
 
-function* addExpenseSaga(action: any) {
+// ✅ Added explicit return type: Generator<any, void, any>
+function* addExpenseSaga(action: any): Generator<any, void, any> {
     try {
         const { expense, groupId } = action.payload;
         const { amount, members, ...rest } = expense;
@@ -37,7 +38,8 @@ function* addExpenseSaga(action: any) {
 
         const token = getAuthToken();
 
-        const response = yield call(() =>
+        // ✅ Cast response to expected type
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.EXPENSES.BASE, {
                 method: "POST",
                 headers: {
@@ -48,7 +50,7 @@ function* addExpenseSaga(action: any) {
             }).then((res) => res.json())
         );
 
-        if (response && response.message == "Expense added successfully") {
+        if (response && response.message === "Expense added successfully") {
             yield put(addExpenseSuccess(response.expense));
             message.success("Expense added successfully.");
             yield put(fetchExpensesRequest(groupId));
@@ -56,16 +58,20 @@ function* addExpenseSaga(action: any) {
             yield put(addExpenseFailure("Failed to add expense"));
         }
     } catch (error) {
-        yield put(addExpenseFailure(error.message));
+        // ✅ Handle error properly
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        yield put(addExpenseFailure(errorMessage));
     }
 }
 
-function* fetchExpensesSaga(action: any) {
+// ✅ Added explicit return type
+function* fetchExpensesSaga(action: any): Generator<any, void, any> {
     try {
         const groupId = action.payload;
         const token = getAuthToken();
 
-        const response = yield call(() =>
+        // ✅ Cast response to expected type
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.EXPENSES.GROUP(groupId), {
                 method: "GET",
                 headers: {
@@ -74,22 +80,26 @@ function* fetchExpensesSaga(action: any) {
             }).then((res) => res.json())
         );
 
-        if (response.message == "Expense get successfully") {
+        if (response.message === "Expense get successfully") {
             yield put(fetchExpensesSuccess(response.expenses));
         } else {
             yield put(fetchExpensesFailure("Failed to fetch expenses"));
         }
     } catch (error) {
-        yield put(fetchExpensesFailure(error.message));
+        // ✅ Handle error properly
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        yield put(fetchExpensesFailure(errorMessage));
     }
 }
 
-function* deleteExpenseSaga(action: any) {
+// ✅ Added explicit return type
+function* deleteExpenseSaga(action: any): Generator<any, void, any> {
     try {
         const { expenseId, groupId } = action.payload;
         const token = getAuthToken();
 
-        const response = yield call(() =>
+        // ✅ Cast response to expected type
+        const response: any = yield call(() =>
             fetch(API_ENDPOINTS.EXPENSES.DELETE(expenseId), {
                 method: "DELETE",
                 headers: {
@@ -98,16 +108,18 @@ function* deleteExpenseSaga(action: any) {
             }).then((res) => res.json())
         );
 
-        if (response && response.message=="Expense deleted successfully") {
+        if (response && response.message === "Expense deleted successfully") {
             yield put(deleteExpenseSuccess(expenseId, groupId));
             yield put(fetchExpensesRequest(groupId));
-            message.success("Expense deleted successfull.");
+            message.success("Expense deleted successfully.");
         } else {
             yield put(deleteExpenseFailure("Failed to delete expense"));
-            message.success(response.message);
+            message.error(response.message);
         }
     } catch (error) {
-        yield put(deleteExpenseFailure(error.message));
+        // ✅ Handle error properly
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        yield put(deleteExpenseFailure(errorMessage));
     }
 }
 

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/rootReducer";
 import { fetchMySettlementsRequest, updateSettlementStatusRequest } from "../store/actions/settlementActions";
 import { useAuth } from "../context/AuthContext";
+import type { ColumnsType } from 'antd/es/table';
 
 const { Title } = Typography;
 
@@ -42,8 +43,17 @@ const MySettlements: React.FC = () => {
 
         setPendingPaymentId(settlementId);
     };
-
-    const columns = [
+    interface Settlement {
+        key: string;
+        groupName: string;
+        payer: string;
+        payee: string;
+        payerId: string;
+        amount: number;
+        status: string;
+        upiID: string;
+    }
+    const columns: ColumnsType<Settlement> = [
         {
             title: "Group",
             dataIndex: "groupName",
@@ -89,7 +99,7 @@ const MySettlements: React.FC = () => {
                         Mark as Completed
                     </Button>
 
-                    {record.status === "pending" && record.payerId === user.id && (
+                    {record.status === "pending" && user && record.payerId === user.id && (
                         <Button
                             type="primary"
                             onClick={() => handleUPIPayment(record.key, record.amount, record.upiID, record.payee, record.groupName)}
@@ -102,21 +112,23 @@ const MySettlements: React.FC = () => {
         }
     ];
 
+    const dataSource: Settlement[] = settlements.map(settlement => ({
+        key: settlement._id ?? "",
+        groupName: (settlement.groupId as any)?.groupName || "Unknown",
+        payer: settlement.payer?.name || "Unknown",
+        payee: settlement.payee?.name || "Unknown",
+        payerId: settlement.payer?._id || "",
+        amount: settlement.amount,
+        status: settlement.status,
+        upiID: settlement.payee?.upiId || ""
+    }));
+
     return (
         <Card style={{ width: "100%", borderRadius: "8px" }}>
             <Title level={3} style={{ color: "#0288D1" }}>My Settlements</Title>
             <Table
                 columns={columns}
-                dataSource={settlements.map(settlement => ({
-                    key: settlement._id,
-                    groupName: settlement.groupId?.groupName || "Unknown",
-                    payer: settlement.payer?.name || "Unknown",
-                    payee: settlement.payee?.name || "Unknown",
-                    payerId: settlement.payer?._id || "",
-                    amount: settlement.amount,
-                    status: settlement.status,
-                    upiID: settlement.payee?.upiId || ""
-                }))}
+                dataSource={dataSource}
                 loading={loading}
                 pagination={{ pageSize: 10 }}
                 scroll={{ x: "max-content" }}

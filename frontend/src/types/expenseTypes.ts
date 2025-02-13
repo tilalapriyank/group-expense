@@ -1,9 +1,10 @@
 export interface Expense {
+    _id:string;
     id: string;
     description: string;
     amount: number;
     paidBy: any;
     groupId?: string;
-    splitDetails: { userId: string; shareAmount: number }[];
+    splitDetails: { userId: any; shareAmount: number }[];
     createdAt?: string;
 }

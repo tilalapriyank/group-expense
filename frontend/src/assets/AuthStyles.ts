@@ -1,4 +1,6 @@
-export const cardStyle = {
+import React from "react";
+
+export const cardStyle : React.CSSProperties = {
     width: "100%",
     maxWidth: "500px",
     padding: "30px",
@@ -8,7 +10,7 @@ export const cardStyle = {
     textAlign: "center" as "center",
 };
 
-export const containerStyle = {
+export const containerStyle : React.CSSProperties = {
     minHeight: "100vh",
     background: "linear-gradient(135deg, #3BDBBC, #0288D1)",
     display: "flex",
@@ -16,11 +18,11 @@ export const containerStyle = {
     justifyContent: "center",
 };
 
-export const cardContainerStyle = {
+export const cardContainerStyle : React.CSSProperties = {
     padding: "20px",
 };
 
-export const leftSideStyle = {
+export const leftSideStyle : React.CSSProperties = {
     flex: 1,
     display: "flex",
     alignItems: "center",
@@ -28,7 +30,7 @@ export const leftSideStyle = {
     padding: "20px",
 };
 
-export const rightSideStyle = {
+export const rightSideStyle : React.CSSProperties = {
     flex: 1,
     display: "flex",
     alignItems: "center",
@@ -39,33 +41,33 @@ export const rightSideStyle = {
     color: "#fff",
 };
 
-export const headingStyle = {
+export const headingStyle : React.CSSProperties = {
     fontSize: "20px",
     fontWeight: "bold",
     color: "#0288D1",
 };
 
-export const subTextStyle = {
+export const subTextStyle : React.CSSProperties = {
     fontSize: "16px",
     marginTop: "10px",
     opacity: "0.8",
 };
 
-export const imageStyle = {
+export const imageStyle : React.CSSProperties = {
     width: "80%",
     maxWidth: "400px",
     marginBottom: "20px",
 };
 
 // buttonStyle.ts
-export const buttonStyle = {
+export const buttonStyle : React.CSSProperties = {
     backgroundColor: "#0288D1",
     borderColor: "#0288D1",
     borderRadius: "6px",
     fontSize: "16px",
 };
 
-export const toggleTextStyle = {
+export const toggleTextStyle : React.CSSProperties = {
     marginTop: "10px",
     color: "#0288D1",
     fontWeight: "bold",

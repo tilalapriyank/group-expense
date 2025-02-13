@@ -50,7 +50,7 @@ export const updateSettlementStatusFailure = (error: string) => ({
 
 
 // Bulk add settlements
-export const addBulkSettlementRequest = (settlementsDetails: any[]) => ({
+export const addBulkSettlementRequest = (settlementsDetails: { transactionList: any[] }) => ({
     type: ADD_BULK_SETTLEMENT_REQUEST,
     payload: settlementsDetails,
 });

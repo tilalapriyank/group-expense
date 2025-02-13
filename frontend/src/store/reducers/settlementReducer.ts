@@ -45,7 +45,7 @@ const settlementReducer = (state = initialState, action: any): SettlementState =
                 settlements: state.settlements.filter(stm => stm.groupId !== action.payload),
             };
         case UPDATE_SETTLEMENT_STATUS_REQUEST:
-            return { ...state, loading: true, error: null };
+            return { ...state, loading: true, error: undefined };
 
         case UPDATE_SETTLEMENT_STATUS_SUCCESS:
             return {
@@ -59,7 +59,7 @@ const settlementReducer = (state = initialState, action: any): SettlementState =
             };
 
         case FETCH_MY_SETTLEMENTS_REQUEST:
-            return { ...state, loading: true, error: null };
+            return { ...state, loading: true, error: undefined };
         case FETCH_MY_SETTLEMENTS_SUCCESS:
             return { ...state, loading: false, settlements: action.payload };
         case FETCH_MY_SETTLEMENTS_FAILURE:
